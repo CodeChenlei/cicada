@@ -12,49 +12,53 @@ import top.crossoverjie.cicada.server.context.CicadaContext;
  */
 public class ThreadLocalHolder {
 
-    private static final FastThreadLocal<Long> LOCAL_TIME= new FastThreadLocal() ;
+	private ThreadLocalHolder() {
 
-    private static final FastThreadLocal<CicadaContext> CICADA_CONTEXT= new FastThreadLocal() ;
+	}
+
+	private static final FastThreadLocal<Long> LOCAL_TIME = new FastThreadLocal<>();
+
+	private static final FastThreadLocal<CicadaContext> CICADA_CONTEXT = new FastThreadLocal<>();
 
 
-    /**
-     * set cicada context
-     * @param context current context
-     */
-    public static void setCicadaContext(CicadaContext context){
-        CICADA_CONTEXT.set(context) ;
-    }
+	/**
+	 * set cicada context
+	 * @param context current context
+	 */
+	public static void setCicadaContext(CicadaContext context) {
+		CICADA_CONTEXT.set(context);
+	}
 
-    /**
-     * remove cicada context
-     */
-    public static void removeCicadaContext(){
-        CICADA_CONTEXT.remove();
-    }
+	/**
+	 * remove cicada context
+	 */
+	public static void removeCicadaContext() {
+		CICADA_CONTEXT.remove();
+	}
 
-    /**
-     * @return get cicada context
-     */
-    public static CicadaContext getCicadaContext(){
-        return CICADA_CONTEXT.get() ;
-    }
+	/**
+	 * @return get cicada context
+	 */
+	public static CicadaContext getCicadaContext() {
+		return CICADA_CONTEXT.get();
+	}
 
-    /**
-     * Set time
-     * @param time current time
-     */
-    public static void setLocalTime(long time){
-        LOCAL_TIME.set(time) ;
-    }
+	/**
+	 * Set time
+	 * @param time current time
+	 */
+	public static void setLocalTime(long time) {
+		LOCAL_TIME.set(time);
+	}
 
-    /**
-     * Get time and remove value
-     * @return get local time
-     */
-    public static Long getLocalTime(){
-        Long time = LOCAL_TIME.get();
-        LOCAL_TIME.remove();
-        return time;
-    }
+	/**
+	 * Get time and remove value
+	 * @return get local time
+	 */
+	public static Long getLocalTime() {
+		Long time = LOCAL_TIME.get();
+		LOCAL_TIME.remove();
+		return time;
+	}
 
 }

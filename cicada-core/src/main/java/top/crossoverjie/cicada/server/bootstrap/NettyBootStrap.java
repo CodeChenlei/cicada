@@ -30,80 +30,85 @@ import static top.crossoverjie.cicada.server.constant.CicadaConstant.SystemPrope
  */
 public class NettyBootStrap {
 
-    private final static Logger LOGGER = LoggerBuilder.getLogger(NettyBootStrap.class);
+	private NettyBootStrap() {
 
-    private static AppConfig appConfig = AppConfig.getInstance() ;
-    private static EventLoopGroup boss = new NioEventLoopGroup(1,new DefaultThreadFactory("boss"));
-    private static EventLoopGroup work = new NioEventLoopGroup(0,new DefaultThreadFactory(APPLICATION_THREAD_WORK_NAME));
-    private static Channel channel ;
+	}
 
-    /**
-     * Start netty Server
-     *
-     * @throws Exception
-     */
-    public static void startCicada() throws Exception {
-        // start
-        startServer();
+	private static final Logger LOGGER = LoggerBuilder.getLogger(NettyBootStrap.class);
 
-        // register shutdown hook
-        shutDownServer();
+	private static AppConfig appConfig = AppConfig.getInstance();
+	private static EventLoopGroup boss = new NioEventLoopGroup(1, new DefaultThreadFactory("boss"));
+	private static EventLoopGroup work = new NioEventLoopGroup(0,
+			new DefaultThreadFactory(APPLICATION_THREAD_WORK_NAME));
+	private static Channel channel;
 
-        // synchronized channel
-        joinServer();
-    }
+	/**
+	 * Start netty Server
+	 *
+	 * @throws InterruptedException 异常
+	 */
+	public static void startCicada() throws InterruptedException {
+		// start
+		startServer();
 
-    /**
-     * start netty server
-     * @throws InterruptedException
-     */
-    private static void startServer() throws InterruptedException {
-        ServerBootstrap bootstrap = new ServerBootstrap()
-                .group(boss, work)
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new CicadaInitializer());
+		// register shutdown hook
+		shutDownServer();
 
-        ChannelFuture future = bootstrap.bind(AppConfig.getInstance().getPort()).sync();
-        if (future.isSuccess()) {
-            appLog();
-        }
-        channel = future.channel();
-    }
+		// synchronized channel
+		joinServer();
+	}
 
-    private static void joinServer() throws Exception {
-        channel.closeFuture().sync();
-    }
+	/**
+	 * start netty server
+	 * @throws InterruptedException 异常
+	 */
+	private static void startServer() throws InterruptedException {
+		ServerBootstrap bootstrap = new ServerBootstrap().group(boss, work).channel(NioServerSocketChannel.class)
+				.childHandler(new CicadaInitializer());
 
-    private static void appLog() {
-        Long start = ThreadLocalHolder.getLocalTime();
-        ApplicationConfiguration applicationConfiguration = (ApplicationConfiguration) getConfiguration(ApplicationConfiguration.class);
-        long end = System.currentTimeMillis();
-        LOGGER.info("Cicada started on port: {}.cost {}ms", applicationConfiguration.get(CicadaConstant.CICADA_PORT), end - start);
-        LOGGER.info(">> access http://{}:{}{} <<","127.0.0.1",appConfig.getPort(),appConfig.getRootPath());
-    }
+		ChannelFuture future = bootstrap.bind(AppConfig.getInstance().getPort()).sync();
+		if (future.isSuccess()) {
+			appLog();
+		}
+		channel = future.channel();
+	}
 
-    /**
-     * shutdown server
-     */
-    private static void shutDownServer() {
-        ShutDownThread shutDownThread = new ShutDownThread();
-        shutDownThread.setName(APPLICATION_THREAD_SHUTDOWN_NAME);
-        Runtime.getRuntime().addShutdownHook(shutDownThread);
-    }
+	private static void joinServer() throws InterruptedException {
+		channel.closeFuture().sync();
+	}
 
-    private static class ShutDownThread extends Thread {
-        @Override
-        public void run() {
-            LOGGER.info("Cicada server stop...");
-            CicadaContext.removeContext();
+	private static void appLog() {
+		Long start = ThreadLocalHolder.getLocalTime();
+		ApplicationConfiguration applicationConfiguration = (ApplicationConfiguration) getConfiguration(
+				ApplicationConfiguration.class);
+		long end = System.currentTimeMillis();
+		LOGGER.info("Cicada started on port: {}.cost {}ms", applicationConfiguration.get(CicadaConstant.CICADA_PORT),
+				end - start);
+		LOGGER.info(">> access http://{}:{}{} <<", "127.0.0.1", appConfig.getPort(), appConfig.getRootPath());
+	}
 
-            CicadaBeanManager.getInstance().releaseBean();
+	/**
+	 * shutdown server
+	 */
+	private static void shutDownServer() {
+		ShutDownThread shutDownThread = new ShutDownThread();
+		shutDownThread.setName(APPLICATION_THREAD_SHUTDOWN_NAME);
+		Runtime.getRuntime().addShutdownHook(shutDownThread);
+	}
 
-            boss.shutdownGracefully();
-            work.shutdownGracefully();
+	private static class ShutDownThread extends Thread {
+		@Override
+		public void run() {
+			LOGGER.info("Cicada server stop...");
+			CicadaContext.removeContext();
 
-            LOGGER.info("Cicada server has been successfully stopped.");
-        }
+			CicadaBeanManager.getInstance().releaseBean();
 
-    }
+			boss.shutdownGracefully();
+			work.shutdownGracefully();
+
+			LOGGER.info("Cicada server has been successfully stopped.");
+		}
+
+	}
 }
